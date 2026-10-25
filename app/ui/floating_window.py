@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit
 from app.ai.prompts import MODE_LABELS
 from app.config import SHORTCUT_LABELS
 from app.ui.screenshot_queue import ScreenshotQueuePanel
-from app.ui.widgets import ActionButton, G, StatusPill, chat_css, icon_button
+from app.ui.widgets import ActionButton, G, StatusPill, chat_css, format_badge, icon_button
 
 INPUT_MODE_LABELS = {"text": "Text (OCR)", "vision": "Vision", "hybrid": "Hybrid"}
 
@@ -238,12 +238,12 @@ class FloatingWindow(QWidget):
         self.prompt = QLineEdit()
         self.prompt.returnPressed.connect(self._on_send)
         self.prompt.installEventFilter(self)
-        self.btn_submit = ActionButton(G["send"], "Submit queue", "primary")
+        self.btn_submit = ActionButton(G["send"], "Submit", "primary", "Ctrl+Enter")
         self.btn_submit.clicked.connect(self._on_send)
-        self.btn_submit.setFixedWidth(150)
+        self.btn_submit.setMinimumWidth(100)
         self.btn_stop = ActionButton(G["stop"], "Stop", "stop")
         self.btn_stop.clicked.connect(self.cancel_clicked)
-        self.btn_stop.setFixedWidth(110); self.btn_stop.setVisible(False)
+        self.btn_stop.setMinimumWidth(80); self.btn_stop.setVisible(False)
         cl.addWidget(self.prompt, 1); cl.addWidget(self.btn_submit); cl.addWidget(self.btn_stop)
         lay.addWidget(self.composer)
         return main
@@ -285,11 +285,13 @@ class FloatingWindow(QWidget):
 
     def set_shortcuts(self, shortcuts: dict[str, str]) -> None:
         self._shortcuts = dict(shortcuts)
-        cap = self._shortcuts.get("capture", "")
-        sub = self._shortcuts.get("submit", "")
+        cap = format_badge(self._shortcuts.get("capture", ""))
+        sub = format_badge(self._shortcuts.get("submit", ""))
         self.btn_capture.set_chip(cap)
         self.btn_submit_queue.set_chip(sub)
         self.btn_capture.setToolTip(f"Capture the screen and add it to the queue ({cap})")
+        if not self._has_conv:
+            self.btn_submit.set_chip("Ctrl+Enter")
 
     def set_shortcut_hint(self, text: str) -> None:  # kept for compatibility
         self.btn_shortcuts.setToolTip(text)
@@ -325,8 +327,8 @@ class FloatingWindow(QWidget):
 
     def set_conversation_active(self, active: bool) -> None:
         self._has_conv = active
-        self.btn_submit.setText("Send" if active else "Submit queue")
-        self.btn_submit.set_chip("" if active else self._shortcuts.get("submit", ""))
+        self.btn_submit.setText("Send" if active else "Submit")
+        self.btn_submit.set_chip("Enter" if active else "Ctrl+Enter")
         self.btn_submit_queue.setVisible(active)
         self.prompt.setPlaceholderText(
             "Ask a follow-up…" if active else "Add an instruction (optional), then submit the queue…")

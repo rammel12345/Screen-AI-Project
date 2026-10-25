@@ -33,17 +33,17 @@ DARK = {
     "bg": "#09090b", "sidebar": "#0f0f12", "s1": "#18181b", "s2": "#1f1f23", "s3": "#27272a",
     "border": "#27272a", "text": "#fafafa", "muted": "#a1a1aa", "faint": "#71717a",
     "accent": "#7c6bff", "accent_h": "#9080ff", "accent_p": "#6a59ec", "accent_text": "#a99bff",
-    "code": "#131316", "focus": "rgba(124,107,255,60%)", "tint": "rgba(124,107,255,18%)",
+    "code": "#131316", "focus": "rgba(124, 107, 255, 150)", "tint": "rgba(124, 107, 255, 45)",
     "sel": "#4c3fd1", "scroll": "#3f3f46", "scroll_h": "#52525b", "disabled": "#52525b",
-    "danger_tint": "rgba(248,113,113,15%)", "press": "#303036", "on_accent": "#ffffff",
+    "danger_tint": "rgba(248, 113, 113, 38)", "press": "#303036", "on_accent": "#ffffff",
 }
 LIGHT = {
     "bg": "#fafafa", "sidebar": "#f4f4f5", "s1": "#ffffff", "s2": "#f4f4f5", "s3": "#e4e4e7",
     "border": "#e4e4e7", "text": "#18181b", "muted": "#52525b", "faint": "#71717a",
     "accent": "#6d5efc", "accent_h": "#7c6bff", "accent_p": "#5a4ae0", "accent_text": "#5a4ae0",
-    "code": "#f4f4f5", "focus": "rgba(109,94,252,60%)", "tint": "rgba(109,94,252,14%)",
+    "code": "#f4f4f5", "focus": "rgba(109, 94, 252, 150)", "tint": "rgba(109, 94, 252, 35)",
     "sel": "#c7c1ff", "scroll": "#d4d4d8", "scroll_h": "#a1a1aa", "disabled": "#a1a1aa",
-    "danger_tint": "rgba(220,38,38,12%)", "press": "#d4d4d8", "on_accent": "#ffffff",
+    "danger_tint": "rgba(220, 38, 38, 30)", "press": "#d4d4d8", "on_accent": "#ffffff",
 }
 
 QSS_TEMPLATE = """
@@ -74,27 +74,28 @@ QLabel#bannerText { color: #f87171; }
 
 /* Tier 1: primary */
 QPushButton#primary { background: @accent; color: @on_accent; font-weight: 600; border: none;
-  border-radius: 6px; padding: 0 14px; min-height: 34px; }
+  border-radius: 6px; padding: 0; min-height: 34px; }
 QPushButton#primary:hover { background: @accent_h; }
 QPushButton#primary:pressed { background: @accent_p; }
-QPushButton#primary:disabled { background: @s3; }
+QPushButton#primary:disabled { background: @s2; }
 QPushButton#primary QLabel { color: @on_accent; font-weight: 600; background: transparent; }
-QPushButton#primary QLabel#chip { background: rgba(255,255,255,18%); border-radius: 4px; padding: 1px 6px;
-  font-size: 11px; font-weight: 500; color: rgba(255,255,255,85%); }
+QPushButton#primary QLabel#chip { background: rgba(255, 255, 255, 50); border-radius: 4px; padding: 2px 6px;
+  font-size: 10px; font-weight: 600; color: #ffffff; }
+QPushButton#primary:hover QLabel#chip { background: rgba(255, 255, 255, 75); }
 QPushButton#primary:disabled QLabel { color: @faint; }
-QPushButton#primary:disabled QLabel#chip { background: @s2; }
+QPushButton#primary:disabled QLabel#chip { background: transparent; color: @faint; border: 1px solid @s3; }
 QPushButton#stop { background: @s3; color: @text; font-weight: 600; border: none; border-radius: 6px;
   padding: 0 14px; min-height: 34px; }
 QPushButton#stop:hover { background: @press; }
 
 /* Tier 2: secondary */
-QPushButton { background: @s2; border: none; border-radius: 6px; padding: 0 12px; min-height: 30px; }
+QPushButton { background: @s2; border: none; border-radius: 6px; padding: 0; min-height: 30px; }
 QPushButton:hover { background: @s3; }
 QPushButton:pressed { background: @press; }
 QPushButton:disabled { color: @disabled; background: transparent; }
 QPushButton#secondary QLabel { background: transparent; }
 QPushButton#secondary:disabled QLabel { color: @disabled; }
-QPushButton#secondary QLabel#chip { background: @s3; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: @muted; }
+QPushButton#secondary QLabel#chip { background: @s3; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 500; color: @muted; }
 
 /* Tier 3: ghost icon */
 QPushButton#icon { font-family: '@icons'; font-size: 14px; background: transparent; color: @muted;
@@ -102,7 +103,7 @@ QPushButton#icon { font-family: '@icons'; font-size: 14px; background: transpare
 QPushButton#icon:hover { background: @s3; color: @text; }
 QPushButton#icon:pressed { background: @press; }
 QPushButton#icon:checked { background: @tint; color: @accent_text; }
-QPushButton#icon[tone="warn"]:checked { background: rgba(251,191,36,18%); color: #fbbf24; }
+QPushButton#icon[tone="warn"]:checked { background: rgba(251, 191, 36, 45); color: #fbbf24; }
 QPushButton#icon[danger="true"]:hover { background: @danger_tint; color: #f87171; }
 QPushButton#icon:disabled { color: @disabled; background: transparent; }
 QPushButton#iconSm { font-family: '@icons'; font-size: 11px; background: transparent; color: @faint;
@@ -210,6 +211,32 @@ def icon_button(glyph: str, tooltip: str, checkable: bool = False, danger: bool 
     return b
 
 
+def format_badge(shortcut: str) -> str:
+    """Format shortcut into a clean, compact hotkey badge (e.g. 'Ctrl+Shift+S', 'Enter')."""
+    if not shortcut:
+        return ""
+    parts = []
+    for p in shortcut.split("+"):
+        p = p.strip().lower()
+        if p == "ctrl":
+            parts.append("Ctrl")
+        elif p == "shift":
+            parts.append("Shift")
+        elif p == "alt":
+            parts.append("Alt")
+        elif p == "win":
+            parts.append("Win")
+        elif p in ("enter", "return"):
+            parts.append("Enter")
+        elif p == "backspace":
+            parts.append("Backspace")
+        elif p == "space":
+            parts.append("Space")
+        else:
+            parts.append(p.upper() if len(p) <= 2 else p.capitalize())
+    return "+".join(parts)
+
+
 class ActionButton(QPushButton):
     """Button with leading glyph, label and optional hotkey chip."""
 
@@ -217,9 +244,11 @@ class ActionButton(QPushButton):
         super().__init__()
         self.setObjectName(object_name)
         self.setCursor(Qt.PointingHandCursor)
+        from PySide6.QtCore import QSize
+        self._size_extra = QSize(0, 0)
         lay = QHBoxLayout(self)
-        lay.setContentsMargins(12, 0, 10, 0)
-        lay.setSpacing(8)
+        lay.setContentsMargins(10, 0, 10, 0)
+        lay.setSpacing(6)
         self._g = QLabel(glyph); self._g.setObjectName("glyph")
         self._t = QLabel(text)
         self._c = QLabel(chip); self._c.setObjectName("chip")
@@ -231,6 +260,11 @@ class ActionButton(QPushButton):
         lay.addWidget(self._c)
         self._c.setVisible(bool(chip))
         self.setMinimumHeight(34)
+
+    def sizeHint(self):
+        from PySide6.QtCore import QSize
+        hint = self.layout().sizeHint()
+        return QSize(max(hint.width() + 14, 80), max(hint.height() + 12, 34))
 
     def setText(self, text: str) -> None:  # noqa: N802 (Qt naming)
         self._t.setText(text)
