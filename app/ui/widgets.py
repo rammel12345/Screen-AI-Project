@@ -79,23 +79,23 @@ QPushButton#primary:hover { background: @accent_h; }
 QPushButton#primary:pressed { background: @accent_p; }
 QPushButton#primary:disabled { background: @s2; }
 QPushButton#primary QLabel { color: @on_accent; font-weight: 600; background: transparent; }
+QPushButton#primary QLabel:disabled { color: @faint; }
 QPushButton#primary QLabel#chip { background: rgba(255, 255, 255, 50); border-radius: 4px; padding: 2px 6px;
   font-size: 10px; font-weight: 600; color: #ffffff; }
-QPushButton#primary:hover QLabel#chip { background: rgba(255, 255, 255, 75); }
-QPushButton#primary:disabled QLabel { color: @faint; }
-QPushButton#primary:disabled QLabel#chip { background: transparent; color: @faint; border: 1px solid @s3; }
+QPushButton#primary QLabel#chip:disabled { background: transparent; color: @faint; border: 1px solid @s3; }
 QPushButton#stop { background: @s3; color: @text; font-weight: 600; border: none; border-radius: 6px;
   padding: 0 14px; min-height: 34px; }
 QPushButton#stop:hover { background: @press; }
 
 /* Tier 2: secondary */
-QPushButton { background: @s2; border: none; border-radius: 6px; padding: 0; min-height: 30px; }
+QPushButton { background: @s2; color: @text; border: none; border-radius: 6px; padding: 0; min-height: 30px; }
 QPushButton:hover { background: @s3; }
 QPushButton:pressed { background: @press; }
 QPushButton:disabled { color: @disabled; background: transparent; }
-QPushButton#secondary QLabel { background: transparent; }
-QPushButton#secondary:disabled QLabel { color: @disabled; }
+QPushButton#secondary QLabel { color: @text; background: transparent; }
+QPushButton#secondary QLabel:disabled { color: @disabled; }
 QPushButton#secondary QLabel#chip { background: @s3; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 500; color: @muted; }
+QPushButton#secondary QLabel#chip:disabled { background: transparent; color: @disabled; }
 
 /* Tier 3: ghost icon */
 QPushButton#icon { font-family: '@icons'; font-size: 14px; background: transparent; color: @muted;
@@ -254,12 +254,26 @@ class ActionButton(QPushButton):
         self._c = QLabel(chip); self._c.setObjectName("chip")
         for w in (self._g, self._t, self._c):
             w.setAttribute(Qt.WA_TransparentForMouseEvents)
+            w.setEnabled(self.isEnabled())
         lay.addWidget(self._g)
         lay.addWidget(self._t)
         lay.addStretch(1)
         lay.addWidget(self._c)
         self._c.setVisible(bool(chip))
         self.setMinimumHeight(34)
+
+    def setEnabled(self, enabled: bool) -> None:  # noqa: N802
+        super().setEnabled(enabled)
+        for w in (self._g, self._t, self._c):
+            w.setEnabled(enabled)
+
+    def changeEvent(self, event):  # noqa: N802
+        super().changeEvent(event)
+        from PySide6.QtCore import QEvent
+        if event.type() == QEvent.Type.EnabledChange:
+            en = self.isEnabled()
+            for w in (self._g, self._t, self._c):
+                w.setEnabled(en)
 
     def sizeHint(self):
         from PySide6.QtCore import QSize
